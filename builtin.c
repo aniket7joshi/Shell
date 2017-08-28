@@ -7,6 +7,10 @@
 #include<signal.h>
 #include<fcntl.h>
 #include <stdlib.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 int implementcd(char input_words[][20],char curpath[], char home[])
 {
 	//printf("%s\n",input_words[1]);
@@ -131,4 +135,42 @@ int implementEcho(char input_words[][20])
     }while(strcmp(input_words[i],"over")!=0);
     printf("\n");
   }
+}
+int implementLS(char input_words[][20])
+{ char my_cwd[1024];
+  getcwd(my_cwd, 1024);
+  DIR *dir;
+  struct dirent *dirp;
+  if ((dir = opendir (my_cwd)) != NULL) {
+  /* print all the files and directories within directory */
+   while ((dirp = readdir(dir)) != NULL){
+        struct stat fileStat;
+        stat(dirp->d_name,&fileStat);   
+        printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+        printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+        printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+        printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+        printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+        printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+        printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+        printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
+        printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+        printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+        printf(" %ld ",fileStat.st_size);
+        printf(" %ld ",fileStat.st_nlink); 
+        printf(" %ld ",fileStat.st_ino);
+        printf(" %s ", dirp->d_name);
+        printf("\n");
+ 
+        //printf(“The file %s a symbolic link\n”, (S_ISLNK(fileStat.st_mode)) ? “is” : “is not”);
+    }
+    
+  }
+  else {
+  /* could not open directory */
+  perror ("Could not open directory");
+  return EXIT_FAILURE;
+  }
+  closedir (dir);
+  
 }

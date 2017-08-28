@@ -16,6 +16,7 @@ int implementEcho(char input_words[][20]);
 char input_commands[10000];
 char input_sentences[1000][1000];
 char copy[10000];
+int implementLS(char input_words[][20]);
 
 int main()
 {	
@@ -78,6 +79,14 @@ int main()
 			{	//printf("%d",(int)strlen(input_words));
 				//int size =0;
 				implementEcho(input_words);
+			}
+			else if (strcmp(input_words[0],"exit") == 0)
+			{
+				exit(0);
+			}
+			else if (strcmp(input_words[0],"ls") == 0)
+			{
+				implementLS(input_words);
 			}
 		}
 	}	
