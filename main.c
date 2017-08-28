@@ -7,7 +7,7 @@
 #include<signal.h>
 #include<fcntl.h>
 #include <stdlib.h>
-int implementcd(char input_words[][20],char curpath[]);
+int implementcd(char input_words[][20],char curpath[], char home[]);
 int input(char input_commands[], char input_sentences[][1000], char copy[]);
 int split(char sentence[], char input_words[][20]);
 void implementpwd();
@@ -21,16 +21,17 @@ int main()
 	{
 		char *username = (char*)malloc(1000*sizeof(char));
 		char * home = (char *)malloc(1000*sizeof(char));
-		char *curpath = (char*)malloc(1000*sizeof(char));
 		char *relative = (char*)malloc(1000*sizeof(char));
 		char hostname[1024];
+		char curpath[1024];
 		username = getlogin();
 		gethostname(hostname, 1023);
 		hostname[1023] = '\0';
 		//printf("%s\n",hostname );
 		strcpy(home, getenv("PWD"));
-		getcwd(curpath, sizeof(curpath));
-
+		//printf("home is %s\n",home);
+		getcwd(curpath, 1024);
+		//printf("current path is %s\n",curpath);
 		int ret = strncmp(home, curpath, strlen(home));
 		if(ret == 0)
 		{
@@ -48,7 +49,7 @@ int main()
 		{
 			strcpy(relative,curpath);
 		}
-		printf("%s\n",relative );
+		//printf("%s\n",relative);
 		printf("<%s@%s>:%s ",username,hostname,relative);
 		int i, j;
 		char *pass;
@@ -61,7 +62,7 @@ int main()
 			int number_of_words = split(input_sentences[i],input_words);
 			if(strcmp(input_words[0],"cd") == 0)
 			{
-				implementcd(input_words,curpath);
+				implementcd(input_words,curpath,home);
 			}
 			else if (strcmp(input_words[0],"pwd") == 0)
 			{
