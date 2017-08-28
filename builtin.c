@@ -141,8 +141,29 @@ int implementLS(char input_words[][20])
   getcwd(my_cwd, 1024);
   DIR *dir;
   struct dirent *dirp;
+  int i = 0;
+  int countL = 0;
+  int countA = 0;
+  int j;
+  while(strcmp(input_words[i],"over")!=0)
+  {
+  	for(j=0;j<strlen(input_words[i]);j++)
+  	{	//printf("1");
+		if(input_words[i][j] == 'l')
+		{	//printf("1");
+			countL++;
+		}
+		else if(input_words[i][j] == 'a')
+		{
+			countA++;
+		}
+   	}
+   	i++;
+   }
   if ((dir = opendir (my_cwd)) != NULL) {
   /* print all the files and directories within directory */
+   //printf("1");
+   if(countA == 1){
    while ((dirp = readdir(dir)) != NULL){
         struct stat fileStat;
         stat(dirp->d_name,&fileStat);   
@@ -161,14 +182,64 @@ int implementLS(char input_words[][20])
         printf(" %ld ",fileStat.st_ino);
         printf(" %s ", dirp->d_name);
         printf("\n");
- 
-        //printf(“The file %s a symbolic link\n”, (S_ISLNK(fileStat.st_mode)) ? “is” : “is not”);
     }
-    
+   }
+ 
+  else if(countL == 2 && countA == 1)
+  {
+  	while ((dirp = readdir(dir)) != NULL){
+        struct stat fileStat;
+        stat(dirp->d_name,&fileStat);   
+        printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+        printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+        printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+        printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+        printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+        printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+        printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+        printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
+        printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+        printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+        printf(" %ld ",fileStat.st_size);
+        printf(" %ld ",fileStat.st_nlink); 
+        printf(" %ld ",fileStat.st_ino);
+        printf(" %s ", dirp->d_name);
+        printf("\n");
+    }
   }
+   else if(countL == 2 && countA == 0)
+  {
+  	while ((dirp = readdir(dir)) != NULL){
+        struct stat fileStat;
+        stat(dirp->d_name,&fileStat);   
+        printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+        printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+        printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+        printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+        printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+        printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+        printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+        printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
+        printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+        printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+        printf(" %ld ",fileStat.st_size);
+        printf(" %ld ",fileStat.st_nlink); 
+        printf(" %ld ",fileStat.st_ino);
+        printf(" %s ", dirp->d_name);
+        printf("\n");
+    }
+  }
+  else if(countL == 1 && countA == 0)
+  {	//printf("1");
+  	while ((dirp = readdir(dir)) != NULL)
+  	{	if((strcmp(dirp->d_name,".")!=0) || (strcmp(dirp->d_name,"..")!=0))
+  		printf("%s ", dirp->d_name);
+  	}
+  	printf("\n");
+  }}
   else {
   /* could not open directory */
-  perror ("Could not open directory");
+  perror ("");
   return EXIT_FAILURE;
   }
   closedir (dir);
