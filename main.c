@@ -3,10 +3,12 @@
 #include<unistd.h>
 #include<errno.h>
 #include<sys/types.h>
+#include<string.h>
 #include <sys/wait.h>
 #include<signal.h>
 #include<fcntl.h>
 #include <stdlib.h>
+
 int implementcd(char input_words[][20],char curpath[], char home[]);
 int input(char input_commands[], char input_sentences[][1000], char copy[]);
 int split(char sentence[], char input_words[][20]);
@@ -14,6 +16,7 @@ void implementpwd();
 char input_commands[10000];
 char input_sentences[1000][1000];
 char copy[10000];
+int implementEcho(char input_words[][20]);
 
 int main()
 {	
@@ -60,6 +63,7 @@ int main()
 			char input_words[20][20];
 			//printf("%s\n",input_sentences[i]);
 			int number_of_words = split(input_sentences[i],input_words);
+			
 			if(strcmp(input_words[0],"cd") == 0)
 			{
 				implementcd(input_words,curpath,home);
@@ -67,6 +71,11 @@ int main()
 			else if (strcmp(input_words[0],"pwd") == 0)
 			{
 				implementpwd();
+			}
+			else if (strcmp(input_words[0],"echo") == 0)
+			{	//printf("%d",(int)strlen(input_words));
+				//int size =0;
+				implementEcho(input_words);
 			}
 		}
 	}	

@@ -38,3 +38,19 @@ void implementpwd()
 	getcwd(my_cwd, 1024);
 	printf("%s\n", my_cwd);
 }
+int implementEcho(char input_words[][20])
+{
+  if(strcmp(input_words[1],"over") == 0)
+  { //printf("Hello");
+    printf("\n" );
+    return 1;
+  }
+  else
+  { int i = 1;
+    do{
+      printf("%s ",input_words[i]);
+      i++;
+    }while(strcmp(input_words[i],"over")!=0);
+    printf("\n");
+  }
+}
