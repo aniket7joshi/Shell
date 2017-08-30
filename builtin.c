@@ -30,9 +30,9 @@ void lsDetails(struct dirent *dirp)
   printf(" %s ", dirp->d_name);
   printf("\n");
 }
-int implementcd(char input_words[][20],char curpath[], char home[])
+int implementcd(char input_words[][20],char curpath[], char home[], int number_of_words)
 {
-	if(strcmp(input_words[1],"&")!=0)
+	if(strcmp(input_words[number_of_words - 2],"&")!=0)
 	{	
 		if (strcmp(input_words[1],"over") == 0) 
 		{
@@ -45,7 +45,6 @@ int implementcd(char input_words[][20],char curpath[], char home[])
 	  		if (strncmp(input_words[1],"~", 1)==0)
 	  		{     //printf("yo found!\n" );
 	        	strcpy(input_words[1],home);
-	        		printf("hi\n");
 	        //printf("args[1] is %s\n",args[1] );
 	      	}
 	    }

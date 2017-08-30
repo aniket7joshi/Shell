@@ -9,7 +9,7 @@
 #include<fcntl.h>
 #include <stdlib.h>
 void implementpinfo(char input_words[][20], char home[]);
-int implementcd(char input_words[][20],char curpath[], char home[]);
+int implementcd(char input_words[][20],char curpath[], char home[],int number_of_words);
 int input(char input_commands[], char input_sentences[][1000], char copy[]);
 int split(char sentence[], char input_words[][20]);
 void implementpwd();
@@ -61,7 +61,7 @@ int main()
 		}
 		//printf("%s\n",relative);
 		printf("<%s@%s>:%s ",username,hostname,relative);
-		int i, j;
+		int i, j = 0;
 		char *pass;
 		int background;
 		int number_of_lines = input(input_commands,input_sentences,copy);
@@ -72,17 +72,20 @@ int main()
 			//printf("%s\n",input_sentences[i]);
 			int number_of_words = split(input_sentences[i],input_words);
 			background=(strcmp(input_words[number_of_words-2],"&")==0);
+			//printf("%d\n",background );
+			j = 0;
 			while(strcmp(input_words[j],"over")!=0)
 			{
 				temp[j]=input_words[j];
 				j++;
 			}
 			temp[j] = NULL;
-			if((((strcmp(input_words[0],"cd")==0) || (strcmp(input_words[0],"pinfo")) == 0 || (strcmp(input_words[0],"pwd")==0) || (strcmp(input_words[0],"echo")==0) || (strcmp(input_words[0],"ls")==0) || (strcmp(input_words[0],"exit")==0)) && (strcmp(input_words[number_of_words-2],"&")!=0)))
+			if(((strcmp(input_words[0],"cd")==0) || strcmp(input_words[0],"pinfo") == 0 || strcmp(input_words[0],"pwd")==0 || strcmp(input_words[0],"echo")==0 || strcmp(input_words[0],"ls")==0 || strcmp(input_words[0],"exit")==0) && (background==0))
 			{
 				if(strcmp(input_words[0],"cd") == 0)
 				{
-					implementcd(input_words,curpath,home);
+
+					implementcd(input_words,curpath,home,number_of_words);
 				}
 				else if (strcmp(input_words[0],"pwd") == 0)
 				{
@@ -108,39 +111,54 @@ int main()
 			}
 			else
 			{
-				pid_t pid;
-				int status;
-				int j = 0;
-				pid=fork();
-				if(pid<0)
+				if(strcmp(input_words[0],"cd") == 0)
 				{
-					fprintf(stderr, "Fork failed");
-				}
-				else if(pid == 0)
-				{
-					if(execvp(input_words[0],temp)<0)
-					{
-						perror("Error");
-						exit(0);
-					}
+
+					implementcd(input_words,curpath,home,number_of_words);
 				}
 				else
 				{
-					if(background == 0)
+					if(background == 1)
 					{
-						wait(&status);
+						while(strcmp(input_words[j],"over")!=0)
+						{
+							temp[j]=input_words[j];
+							j++;
+						}
+						
+						temp[j-1] = NULL;
+					}	
+					pid_t pid;
+					int status	;
+					int j = 0;
+					pid=fork();
+					if(pid<0)
+					{
+						fprintf(stderr, "Fork failed");
 					}
-					else if(background == 1)
+					else if(pid == 0)
 					{
-						printf("Process Started: %s [%d]\n",input_words[0],pid);
+						if(execvp(input_words[0],temp)<0)
+						{
+							perror("Error");
+							exit(0);
+						}
+					}
+					else
+					{
+						if(background == 0)
+						{
+							wait(&status);
+						}
+						else if(background == 1)
+						{
+							printf("Process Started: %s [%d]\n",input_words[0],pid);
+						}
 					}
 				}
 			}
-	
-
-		
-	}	
-}
+		}	
+	}
 	return 0;
 
 }
