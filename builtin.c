@@ -32,27 +32,29 @@ void lsDetails(struct dirent *dirp)
 }
 int implementcd(char input_words[][20],char curpath[], char home[])
 {
-	//printf("%s\n",input_words[1]);
-	if (strcmp(input_words[1],"over") == 0) 
-	{
-		//printf("yo\n");
-    	strcpy(input_words[1],home);
-  	} 
-  	else 
-  	{
+	if(strcmp(input_words[1],"&")!=0)
+	{	
+		if (strcmp(input_words[1],"over") == 0) 
+		{
+			//printf("yo\n");
+	    	strcpy(input_words[1],home);
+	  	} 
+	  	else 
+	  	{
 
-  		if (strncmp(input_words[1],"~", 1)==0)
-  		{     //printf("yo found!\n" );
-        	strcpy(input_words[1],home);
-        		printf("hi\n");
-        //printf("args[1] is %s\n",args[1] );
-      	}
-    }
-    int out = chdir(input_words[1]);
-    if(out!=0)
-    {
-    	perror("Error: ");	
-    }
+	  		if (strncmp(input_words[1],"~", 1)==0)
+	  		{     //printf("yo found!\n" );
+	        	strcpy(input_words[1],home);
+	        		printf("hi\n");
+	        //printf("args[1] is %s\n",args[1] );
+	      	}
+	    }
+	    int out = chdir(input_words[1]);
+	    if(out!=0)
+	    {
+	    	perror("Error: ");	
+	    }
+	}
   	return 1;	
 }
 void implementpwd()
@@ -76,73 +78,6 @@ int implementEcho(char input_words[][20])
     }while(strcmp(input_words[i],"over")!=0);
     printf("\n");
   }
-}
-int implementLS(char input_words[][20])
-{ char my_cwd[1024];
-  getcwd(my_cwd, 1024);
-  DIR *dir;
-  struct dirent *dirp;
-  int i = 0;
-  int flag = 0;
- 
-  while(strcmp(input_words[i],"over")!=0)
-  {
-    if ((dir = opendir (my_cwd)) != NULL) {
-    /* print all the files and directories within directory */
-     //printf("1");
-     if(strcmp(input_words[i],"-l") == 0){
-     while ((dirp = readdir(dir)) != NULL){
-          lsDetails(dirp);
-          flag = 1;
-      }
-      break;
-     }
-   
-    else if(strcmp(input_words[i],"-al") == 0 || strcmp(input_words[i],"-la") == 0 || (strcmp(input_words[i],"-a") == 0 && strcmp(input_words[i+1],"-l") == 0) || (strcmp(input_words[i],"-l") == 0 && strcmp(input_words[i+1],"-a") == 0))
-    {
-    	while ((dirp = readdir(dir)) != NULL){
-          lsDetails(dirp);
-          flag = 1;
-      }
-      break;
-    }
-     else if(strcmp(input_words[i],"-a") == 0)
-    {
-    	while ((dirp = readdir(dir)) != NULL){
-          lsDetails(dirp);
-          flag = 1;
-      }
-     break;
-    }
-    
-    else if(strcmp(input_words[i+1],"over") == 0)
-    {
-   
-      while ((dirp = readdir(dir)) != NULL)
-      { if((strcmp(dirp->d_name,".")!=0) || (strcmp(dirp->d_name,"..")!=0))
-        printf("%s ", dirp->d_name);
-      }
-      printf("\n");
-      break;
-       
-    }
-    else if(input_words[i+1][0] != '-')
-    {
-      printf("No such file or directory\n");
-      break;
-    }
-    }
-
-    else {
-    /* could not open directory */
-    perror ("");
-    return EXIT_FAILURE;
-    }
-
-    i++;
-    closedir (dir);
-    }
-  
 }
 void implementpinfo(char input_words[][20], char home[])
 {
@@ -223,3 +158,70 @@ void implementpinfo(char input_words[][20], char home[])
   printf("\n");
 }
 
+int implementLS(char input_words[][20])
+{ char my_cwd[1024];
+  getcwd(my_cwd, 1024);
+  DIR *dir;
+  struct dirent *dirp;
+  int i = 0;
+  int flag = 0;
+ 
+  while(strcmp(input_words[i],"over")!=0)
+  {
+    if ((dir = opendir (my_cwd)) != NULL) {
+    /* print all the files and directories within directory */
+     //printf("1");
+     if(strcmp(input_words[i],"-l") == 0){
+     while ((dirp = readdir(dir)) != NULL){
+          lsDetails(dirp);
+          flag = 1;
+      }
+      break;
+     }
+   
+    else if(strcmp(input_words[i],"-al") == 0 || strcmp(input_words[i],"-la") == 0 || (strcmp(input_words[i],"-a") == 0 && strcmp(input_words[i+1],"-l") == 0) || (strcmp(input_words[i],"-l") == 0 && strcmp(input_words[i+1],"-a") == 0))
+    {
+    	while ((dirp = readdir(dir)) != NULL){
+          lsDetails(dirp);
+          flag = 1;
+      }
+      break;
+    }
+     else if(strcmp(input_words[i],"-a") == 0)
+    {
+    	while ((dirp = readdir(dir)) != NULL){
+          lsDetails(dirp);
+          flag = 1;
+      }
+     break;
+    }
+    
+    else if(strcmp(input_words[i+1],"over") == 0)
+    {
+   
+      while ((dirp = readdir(dir)) != NULL)
+      { if((strcmp(dirp->d_name,".")!=0) || (strcmp(dirp->d_name,"..")!=0))
+        printf("%s ", dirp->d_name);
+        printf("\n");
+      }
+      break;
+       
+    }
+    else if(input_words[i+1][0] != '-')
+    {
+      printf("No such file or directory\n");
+      break;
+    }
+    }
+
+    else {
+    /* could not open directory */
+    perror ("");
+    return EXIT_FAILURE;
+    }
+
+    i++;
+    closedir (dir);
+    }
+  
+}
