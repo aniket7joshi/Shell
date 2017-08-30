@@ -10,25 +10,48 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-void lsDetails(struct dirent *dirp)
-{
-  struct stat fileStat;
-  stat(dirp->d_name,&fileStat);   
-  printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
-  printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
-  printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
-  printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
-  printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
-  printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
-  printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
-  printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
-  printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
-  printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
-  printf(" %ld ",fileStat.st_size);
-  printf(" %ld ",fileStat.st_nlink); 
-  printf(" %ld ",fileStat.st_ino);
-  printf(" %s ", dirp->d_name);
-  printf("\n");
+void lsDetails(struct dirent *dirp,int a)
+{ if(a == 1)
+  {	  if(dirp->d_name[0] != '.')
+	  {	struct stat fileStat;
+		  stat(dirp->d_name,&fileStat);   
+		  printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+		  printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+		  printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+		  printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+		  printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+		  printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+		  printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+		  printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
+		  printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+		  printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+		  printf(" %ld ",fileStat.st_size);
+		  printf(" %ld ",fileStat.st_nlink); 
+		  printf(" %ld ",fileStat.st_ino);
+		  printf(" %s ", dirp->d_name);
+	  	  printf("\n");
+	  }
+   }
+   else
+   {
+	  struct stat fileStat;
+	  stat(dirp->d_name,&fileStat);   
+	  printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+	  printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+	  printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+	  printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+	  printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+	  printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+	  printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+	  printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
+	  printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+	  printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+	  printf(" %ld ",fileStat.st_size);
+	  printf(" %ld ",fileStat.st_nlink); 
+	  printf(" %ld ",fileStat.st_ino);
+	  printf(" %s ", dirp->d_name);
+	  printf("\n");
+   }
 }
 int implementcd(char input_words[][20],char curpath[], char home[], int number_of_words)
 {
@@ -172,7 +195,7 @@ int implementLS(char input_words[][20])
      //printf("1");
      if(strcmp(input_words[i],"-l") == 0){
      while ((dirp = readdir(dir)) != NULL){
-          lsDetails(dirp);
+          lsDetails(dirp,1);
           flag = 1;
       }
       break;
@@ -181,7 +204,7 @@ int implementLS(char input_words[][20])
     else if(strcmp(input_words[i],"-al") == 0 || strcmp(input_words[i],"-la") == 0 || (strcmp(input_words[i],"-a") == 0 && strcmp(input_words[i+1],"-l") == 0) || (strcmp(input_words[i],"-l") == 0 && strcmp(input_words[i+1],"-a") == 0))
     {
     	while ((dirp = readdir(dir)) != NULL){
-          lsDetails(dirp);
+          lsDetails(dirp,0);
           flag = 1;
       }
       break;
@@ -189,7 +212,7 @@ int implementLS(char input_words[][20])
      else if(strcmp(input_words[i],"-a") == 0)
     {
     	while ((dirp = readdir(dir)) != NULL){
-          lsDetails(dirp);
+          lsDetails(dirp,0);
           flag = 1;
       }
      break;
@@ -200,8 +223,11 @@ int implementLS(char input_words[][20])
    
       while ((dirp = readdir(dir)) != NULL)
       { if((strcmp(dirp->d_name,".")!=0) || (strcmp(dirp->d_name,"..")!=0))
-        printf("%s ", dirp->d_name);
-        printf("\n");
+        if(dirp->d_name[0] != '.')
+        {
+	        printf("%s ", dirp->d_name);
+	        printf("\n");
+	    }
       }
       break;
        
