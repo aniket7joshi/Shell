@@ -1,13 +1,13 @@
-# C-shell
 An attempt to implement the C shell with all it's features
+# C-shell
 
 ## BUILTIN COMMANDS
 
 cd and echo, both work exactly the same like the normal terminal one. We have not included escape characters and made different flags ( as it was mentioned in the news forum ).
 
 (Reading user input again)
-
 ## SIGNAL HANDLING AND PIPING/REDIRECTION
+
 
 All the Basic Signal Handling is done
 
