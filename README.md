@@ -32,3 +32,5 @@ I have created four dependency files
 I have made a makefile which compiles each of the dependencies I have created (.c and .h files which support the main program - main.c). The makefile creates an object file after compilation and in the end compiles all of them with the main program main (because it has the main function). It creates an executable file by the name "main"
 
 To start the shell, just execute the "main" executable file which is created after you use the make command (./main).
+
+##**Created by Saurabh Chand Ramola and Aniket Joshi**
