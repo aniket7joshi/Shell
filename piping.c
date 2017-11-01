@@ -51,12 +51,10 @@ int implementpipe(char pip[][1000], int count)
     {
         printf("%s\n",pip[i]);
     }
-    //printf("count is %d\n",count );
     char *temp[1000];
     char first[1000][1000];
     for(int i=0;i<count;i++)
     {
-        //printf("hi\n" );
         int x = strlen(pip[i]);
         temp[i] = pip[i];
         temp[i][x-1] = '\0';
@@ -93,4 +91,86 @@ int implementpipe(char pip[][1000], int count)
     printf("len is %d\n",len );
     printf("%s\n",temp[i]);
     return execvp(first[i], temp + i);
+}
+int parse(char *line, char **argv, int x)
+{
+     while (*line != '\0') {       /* if not the end of line ....... */
+          while (*line == ' ' || *line == '\t' || *line == '\n')
+               *line++ = '\0';     /* replace white spaces with 0    */
+          *argv++ = line;          /* save the argument position     */
+          while (*line != '\0' && *line != ' ' &&
+                 *line != '\t' && *line != '\n')
+               line++;
+               x++;             /* skip the argument until ...    */
+     }
+     *argv = '\0';
+     return x;                /* mark the end of argument list  */
+}
+void  attempt(char **argv,int a)
+{
+    int i=0;
+    execvp(argv[0], argv);
+    return;
+}
+
+void execute(char *first)
+{
+    //fprintf(stderr,"asdasd %s\n", first);
+    char *argv[64];
+    int x = 0;
+    int a = parse(first,argv,x);
+    argv[a-1] = NULL;
+    int i;
+    int status;
+    pid_t pid = fork();
+    if(pid == 0)
+        execvp(argv[0], argv);
+    else
+            {while(wait(&status)!=pid);
+            //printf("after exec\n");}
+        }
+    return;
+}
+void piping(char *command)
+{
+    char* first = strtok_r(command,"|",&command);
+    char *second = strtok_r(command,"|",&command);
+
+    int f1 = 0;
+    if(second == NULL)
+    {
+        execute(first);
+        return;
+    }
+    int p[2];
+    while(first)
+    {
+        int status;
+        pipe(p);
+        int pid = fork();
+        if(pid == -1)
+        {
+            exit(0);
+        }
+        else if (pid == 0)
+        {
+            dup2(f1, 0);
+            if(second!=NULL)
+            {
+                if (dup2(p[1],1) == -1){}
+            }
+            close(p[0]);
+
+            execute(first);
+            exit(0);
+        }
+        else
+        {
+            waitpid(pid,NULL,0);
+            close(p[1]);
+            f1 = p[0];
+        }
+        first = second;
+        second = strtok_r(command,"|",&command);
+    }
 }

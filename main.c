@@ -10,6 +10,7 @@
 #include<fcntl.h>
 #include <stdlib.h>
 #include <pwd.h>
+pid_t SHELLPID;
 typedef struct process
 {
 	int num;
@@ -17,6 +18,7 @@ typedef struct process
 }process;
 process * a[200];
 int no = 0;
+void piping(char *command);
 void fg(char input_words[][20], int no);
 void kjob(char input_words[][20], int no);
 void implementpinfo(char input_words[][20], char home[]);
@@ -34,6 +36,91 @@ void redirect(char input_words[][20], int number_of_words);
 int checkpipe(char input_words[][20], int number_of_words);
 int implementpipe(char pip[][1000], int count);
 void jobs(int no);
+void deleteJob(int jobpid)
+{
+    int i;
+    int flag=0;
+    for(i=0;i<no;i++)
+    {
+        if(a[i]!=NULL && (a[i])->num == jobpid )
+            flag=1;
+
+        if(flag==1)
+            a[i]=a[i+1];
+    }
+	no--;
+}
+void printEnv()
+{
+	char * home = (char *)malloc(1000*sizeof(char));
+	char *relative = (char*)malloc(1000*sizeof(char));
+	char hostname[1024];
+	char curpath[1024];
+	struct passwd * myname=NULL;
+	myname = getpwuid(getuid());
+	gethostname(hostname, 1023);
+	hostname[1023] = '\0';
+	strcpy(home, getenv("PWD"));
+	getcwd(curpath, 1024);
+	int ret = strncmp(home, curpath, strlen(home));
+	if(ret == 0)
+	{
+		relative[0] = '~';
+		int ptr = 1;
+		int i;
+		for(i = strlen(home);i<strlen(curpath);i++)
+		{
+			relative[ptr] = curpath[i];
+			ptr++;
+		}
+		relative[strlen(curpath)] = '\0';
+	}
+	else
+	{
+		strcpy(relative,curpath);
+	}
+	printf("<%s@%s>:%s ",myname->pw_name,hostname,relative);
+}
+void sig_handler(int sig)
+{
+    if(sig == SIGINT)
+    {
+        printf("\n");
+        printEnv();
+        fflush(stdout);
+    }
+    if(sig == SIGTSTP)
+    {
+        printf("\n");
+        printEnv();
+        fflush(stdout);
+    }
+    if(sig == SIGQUIT)
+    {
+        printf("\n");
+        printEnv();
+        fflush(stdout);
+    }
+    if(sig == SIGCHLD)
+    {
+        union wait wstat;
+        pid_t pid;
+
+        while(1)
+        {
+            pid = wait3(&wstat,WNOHANG,(struct rusage *)NULL);
+            if(pid == 0 )
+                return;
+            else if(pid == -1)
+                return;
+            else
+            {
+                fprintf(stderr,"\nProcess with PID : %d exited with return value: %d\n",pid,wstat.w_retcode);
+                deleteJob(pid);
+            }
+        }
+    }
+}
 
 void proc_exit()
 {
@@ -49,6 +136,7 @@ void proc_exit()
 			return;
 		else
 			fprintf (stderr, "\nProcess with pid %d has been exited normally.\n", pid);
+			deleteJob(pid);
 	}
 	return;
 }
@@ -56,96 +144,55 @@ void proc_exit()
 int main()
 {
 	while(1)
-	{	char *temp[20];
+	{
+		signal(SIGINT,SIG_IGN);
+    	signal(SIGQUIT,SIG_IGN);
+    	signal(SIGTSTP,SIG_IGN);
+    	if( signal(SIGINT,sig_handler) == 0 )
+        	continue;
+    	if( signal(SIGQUIT,sig_handler) == 0 )
+        	continue;
+    	if ( signal(SIGTSTP,sig_handler) == 0 )
+			continue;
+		printEnv();
+
+		char *temp[20];
 		char cwd[1024];
 		cwd[1023]='\0';
 		char *original=getcwd(cwd, sizeof(cwd));
 		char string[1024];
 		strcpy(string,original);
+
+		int i, j = 0;
+		char *pass;
+		char temp1[100][100]={0};
+		int background;
 		char * home = (char *)malloc(1000*sizeof(char));
 		char *relative = (char*)malloc(1000*sizeof(char));
 		char hostname[1024];
 		char curpath[1024];
-		struct passwd * myname=NULL;
-  		myname = getpwuid(getuid());
-		gethostname(hostname, 1023);
-		hostname[1023] = '\0';
 		strcpy(home, getenv("PWD"));
 		getcwd(curpath, 1024);
-		int ret = strncmp(home, curpath, strlen(home));
-		if(ret == 0)
-		{
-			relative[0] = '~';
-			int ptr = 1;
-			int i;
-			for(i = strlen(home);i<strlen(curpath);i++)
-			{
-				relative[ptr] = curpath[i];
-				ptr++;
-			}
-			relative[strlen(curpath)] = '\0';
-		}
-		else
-		{
-			strcpy(relative,curpath);
-		}
-		printf("<%s@%s>:%s ",myname->pw_name,hostname,relative);
-		int i, j = 0;
-		char *pass;
-		char temp1[100][100];
-		int background;
 		int number_of_lines = input(input_commands,input_sentences,copy);
 		for(i=0;i<number_of_lines;i++)
 		{
-			char input_words[20][20];
+			char input_words[20][20]={0};
 			int number_of_words = split(input_sentences[i],input_words);
 			int count = checkpipe(input_words, number_of_words-1);
-			while(strcmp(input_words[j],"over")!=0)
+			if(count>1)
 			{
-				strcpy(temp1[j], input_words[j]);
-				j++;
+				char command[2000]={0};
+				int j=0;
+				while(strcmp(input_words[j],"over")!=0)
+				{
+					strcat(command,input_words[j]);
+					strcat(command," ");
+					j++;
+				}
+				//printf("command is %s\n",command);
+				piping(command);
+				continue;
 			}
-			for(int p=0;p<j;p++)
-			{
-				printf("%s\n",temp1[p]);
-			}
-			char pip[1000][1000];
-			int ptr[100];
-			// if(count>1)
-			// {
-			// 	int x = 0, y;
-			// 	j = 0;
-			// 	printf("pehle\n");
-			// 	printf("%d\n",number_of_words);
-			// 	while(j<=number_of_words-2)
-			// 	{
-			// 		for(int k=0;k<100;k++)
-			// 		{
-			// 			ptr[k] = 0;
-			// 		}
-			// 		while(j<=number_of_words - 2 && strncmp(input_words[j],"|",1)!=0)
-			// 		{
-			// 			int len = strlen(temp1[j]);
-			// 			for(y=0;y<len;y++)
-			// 			{
-			// 				printf("x:%d y:%d j: %d\n",x,y,j);
-			// 				pip[x][ptr[x]] = temp1[j][y];
-			// 				ptr[x]++;
-			// 			}
-			// 			printf("x:%d y:%d j: %d\n",x,y,j);
-			// 			pip[x][ptr[x]] = ' ';
-			// 			ptr[x]++;
-			// 			j++;
-			// 		}
-			// 		if(strncmp(input_words[j],"|",1)==0)
-			// 			j++;
-			// 		x++;
-			// 	}
-			// 	count = x;
-			// 	printf("count is %d\n",count);
-			// 	implementpipe(pip, count);
-			// 	continue;
-			// }
 			//printf("%d\n",count);
 			background=(strcmp(input_words[number_of_words-2],"&")==0);
 			j = 0;
@@ -155,7 +202,7 @@ int main()
 				j++;
 			}
 			temp[j] = NULL;
-			if(((strcmp(input_words[0],"cd")==0) || strcmp(input_words[0],"overkill") == 0 || strcmp(input_words[0],"fg") == 0 || strcmp(input_words[0],"kjob") == 0 || strcmp(input_words[0],"pinfo") == 0 || strcmp(input_words[0],"jobs") == 0 || strcmp(input_words[0],"pwd") == 0 || strcmp(input_words[0],"echo")==0 || strcmp(input_words[0],"ls")==0 || strcmp(input_words[0],"quit")==0) && (background==0))
+			if(((strcmp(input_words[0],"cd")==0) ||strcmp(input_words[0],"setenv") == 0 || strcmp(input_words[0],"unsetenv") == 0 || strcmp(input_words[0],"overkill") == 0 || strcmp(input_words[0],"fg") == 0 || strcmp(input_words[0],"kjob") == 0 || strcmp(input_words[0],"pinfo") == 0 || strcmp(input_words[0],"jobs") == 0 || strcmp(input_words[0],"pwd") == 0 || strcmp(input_words[0],"echo")==0 || strcmp(input_words[0],"ls")==0 || strcmp(input_words[0],"quit")==0) && (background==0))
 			{
 				if(strcmp(input_words[0],"cd") == 0)
 				{
@@ -165,13 +212,22 @@ int main()
 				{
 					overkill(no);
 				}
+				if(strcmp(input_words[0],"setenv") == 0)
+				{
+					setenv(input_words[1],input_words[2],1);
+					//system("/bin/sh");
+				}
+				if(strcmp(input_words[0],"unsetenv") == 0)
+				{
+					unsetenv(input_words[1]);
+				}
 				if(strcmp(input_words[0],"fg") == 0)
 				{
 					fg(input_words,no);
 				}
 				if(strcmp(input_words[0],"kjob") == 0)
 				{
-					printf("yo\n");
+				//	printf("yo\n");
 					kjob(input_words,no);
 				}
 				if(strcmp(input_words[0],"jobs") == 0)
@@ -210,12 +266,18 @@ int main()
 					pid_t pid;
 					int status;
 					int j = 0;
-					//signal (SIGCHLD, proc_exit);
+					int x;
+					signal (SIGCHLD, proc_exit);
 					pid=fork();
-					no++;
-    				a[no] = (process *) malloc(sizeof(process));
-    				(a[no])->num = pid;
-    				strcpy((a[no])->arr, input_words[0]);
+					if(background == 1 && pid!=0)
+					{
+						printf("yes\n");
+						no++;
+						a[no] = (process *) malloc(sizeof(process));
+						(a[no])->num = pid;
+						strcpy((a[no])->arr, input_words[0]);
+						printf("%d\n",a[no]->num);
+					}
 					if(pid<0)
 					{
 						fprintf(stderr, "Fork failed");
@@ -232,7 +294,10 @@ int main()
 							j++;
 						}
 						if(background == 1)
+						{
+
 							temp[j-1] = NULL;
+						}
 						else
 							temp[j] = NULL;
 						if(execvp(input_words[0],temp)<0)

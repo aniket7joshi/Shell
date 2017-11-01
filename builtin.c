@@ -65,17 +65,12 @@ int implementcd(char input_words[][20],char curpath[], char home[], int number_o
 	{
 		if (strcmp(input_words[1],"over") == 0)
 		{
-			//printf("yo\n");
 	    	strcpy(input_words[1],home);
 	  	}
 	  	else
 	  	{
-
-	  		if (strncmp(input_words[1],"~", 1)==0)
-	  		{     //printf("yo found!\n" );
+			if (strncmp(input_words[1],"~", 1)==0)
 	        	strcpy(input_words[1],home);
-	        //printf("args[1] is %s\n",args[1] );
-	      	}
 	    }
 	    int out = chdir(input_words[1]);
 	    if(out!=0)
@@ -94,7 +89,7 @@ void implementpwd()
 int implementEcho(char input_words[][20])
 {
   if(strcmp(input_words[1],"over") == 0)
-  { //printf("Hello");
+  {
     printf("\n" );
     return 1;
   }
@@ -143,7 +138,6 @@ void implementpinfo(char input_words[][20], char home[])
   char status[1000];
   strcpy(status, filename);
   strcat(status, "/status");
-  //printf("%s\n",status );
   FILE *fp1 = fopen(status, "r");
   if(!fp1)
   {
@@ -213,8 +207,6 @@ void implementpinfojobs(char arr[20],int x)
   char status[1000];
   strcpy(status, filename);
   strcat(status, "/status");
-  //printf("%s\n",status );
-  //printf("%s\n",status );
   FILE *fp1 = fopen(status, "r");
   if(!fp1)
   {
@@ -245,8 +237,6 @@ int implementLS(char input_words[][20])
   while(strcmp(input_words[i],"over")!=0)
   {
     if ((dir = opendir (my_cwd)) != NULL) {
-    /* print all the files and directories within directory */
-     //printf("1");
      if(strcmp(input_words[i],"-l") == 0){
      while ((dirp = readdir(dir)) != NULL){
           lsDetails(dirp,1);
@@ -294,29 +284,26 @@ int implementLS(char input_words[][20])
     }
 
     else {
-    /* could not open directory */
     perror ("");
     return EXIT_FAILURE;
     }
+	i++;
 
-    i++;
     closedir (dir);
     }
 
 }
+
 void jobs(int no)
 {
     int loop=1;
-    //printf("no is %d\n",no );
     while(loop<=no)
     {
         if(a[loop]!=NULL)
         {
             printf("[%d] ", loop );
             printf("%s ", (a[loop])->arr );
-            //implementpinfojobs(a[loop]->arr, a[loop]->num);
             printf("[%d]\n", (a[loop])->num );
-            //printf("\n");
         }
         loop++;
     }
@@ -329,7 +316,6 @@ void kjob(char input_words[][20], int no)
     }
     int signo = atoi(input_words[2]);
     int procno =atoi(input_words[1]);
-    //printf("signo: %d procno:%d\n",signo,procno);
     int i;
     for(i=1;i<=no;i++)
     {
@@ -338,19 +324,15 @@ void kjob(char input_words[][20], int no)
             break;
         }
     }
-    printf("hi\n" );
+    //printf("hi\n" );
     if(i==no+1)
     {
         perror("process does not exist");
     }
-    //printf("procno is %d\n",procno );
-    //printf("signo is %d\n",signo );
     int id = (a[i])->num;
     a[i]=NULL;
     int ret = kill(id, signo);
 
-    //printf("ret is %d\n",ret);
-    //return 1;
 }
 void fg(char input_words[][20], int no)
 {
@@ -374,7 +356,7 @@ void fg(char input_words[][20], int no)
     }
     int id = a[i]->num;
     a[i] = NULL;
-    kill(id, 18);
+    kill(id, SIGCONT);
 
 }
 void overkill(int no)
